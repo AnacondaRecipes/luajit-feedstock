@@ -26,30 +26,30 @@ requirements:
     # LuaJIT should not be installed together with lua 5.1
     - lua <5.1|>=5.2
 
-# test:
-#   files:
-#     - test_luajit.c
-#   requires:
-#     - {{ compiler('c') }}
-#     - pkg-config            # [unix]
-#   commands:
-#     - test -x "${PREFIX}/bin/luajit"                      # [unix]
-#     - test -f "${PREFIX}/include/luajit-2.1/lua.h"        # [unix]
-#     - test -f "${PREFIX}/include/luajit-2.1/luajit.h"     # [unix]
-#     - test -f "${PREFIX}/lib/pkgconfig/luajit.pc"         # [unix]
-#     - test -f "${PREFIX}/lib/libluajit${SHLIB_EXT}"       # [unix]
-#     - luajit -v                                           # [unix]
-#     - luajit -e "print(package.path)"                     # [unix]
+test:
+  files:
+    - test_luajit.c
+  requires:
+    - {{ compiler('c') }}
+    - pkg-config            # [unix]
+  commands:
+    - test -x "${PREFIX}/bin/luajit"                      # [unix]
+    - test -f "${PREFIX}/include/luajit-2.1/lua.h"        # [unix]
+    - test -f "${PREFIX}/include/luajit-2.1/luajit.h"     # [unix]
+    - test -f "${PREFIX}/lib/pkgconfig/luajit.pc"         # [unix]
+    - test -f "${PREFIX}/lib/libluajit${SHLIB_EXT}"       # [unix]
+    - luajit -v                                           # [unix]
+    - luajit -e "print(package.path)"                     # [unix]
 
-#    #  - if not exist %LIBRARY_BIN%\\luajit.exe exit 1         # [win]
-#    #  - if not exist %LIBRARY_INC%\\luajit-2.1\\lua.h exit 1  # [win]
-#    #  - luajit.exe -v                                         # [win]
-#    #  - luajit.exe -e "print(package.path)"                   # [win]
+   #  - if not exist %LIBRARY_BIN%\\luajit.exe exit 1         # [win]
+   #  - if not exist %LIBRARY_INC%\\luajit-2.1\\lua.h exit 1  # [win]
+   #  - luajit.exe -v                                         # [win]
+   #  - luajit.exe -e "print(package.path)"                   # [win]
     
 
-#     - export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"                           # [unix]
-#     - ${CC} test_luajit.c -o test_luajit $(pkg-config --cflags --libs luajit) -Wl,-rpath,${PREFIX}/lib    # [unix]
-#     - ./test_luajit                                                              # [unix]
+    - export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"                           # [unix]
+    - ${CC} test_luajit.c -o test_luajit $(pkg-config --cflags --libs luajit) -Wl,-rpath,${PREFIX}/lib    # [unix]
+    - ./test_luajit                                                              # [unix]
 
 about:
   home: https://luajit.org
