@@ -33,6 +33,7 @@ test:
     - {{ compiler('c') }}
     - pkg-config            # [unix]
   commands:
+    # Smoke tests Unix
     - test -x "${PREFIX}/bin/luajit"                      # [unix]
     - test -f "${PREFIX}/include/luajit-2.1/lua.h"        # [unix]
     - test -f "${PREFIX}/include/luajit-2.1/luajit.h"     # [unix]
@@ -41,15 +42,21 @@ test:
     - luajit -v                                           # [unix]
     - luajit -e "print(package.path)"                     # [unix]
 
-   #  - if not exist %LIBRARY_BIN%\\luajit.exe exit 1         # [win]
-   #  - if not exist %LIBRARY_INC%\\luajit-2.1\\lua.h exit 1  # [win]
-   #  - luajit.exe -v                                         # [win]
-   #  - luajit.exe -e "print(package.path)"                   # [win]
-    
+    # Smoke tests Windows
+    - if not exist %LIBRARY_BIN%\\luajit.exe exit 1         # [win]
+    - if not exist %LIBRARY_INC%\\luajit-2.1\\lua.h exit 1  # [win]
+    - luajit.exe -v                                         # [win]
+    - luajit.exe -e "print(package.path)"                   # [win]
 
-    - export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"                           # [unix]
+    # End-to-End test Unix
+    - export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"      # [unix]
     - ${CC} test_luajit.c -o test_luajit $(pkg-config --cflags --libs luajit) -Wl,-rpath,${PREFIX}/lib    # [unix]
-    - ./test_luajit                                                              # [unix]
+    - ./test_luajit                                         # [unix]
+
+    # End-to-End test Windows
+    - cl.exe /I"%LIBRARY_INC%\luajit-2.1" test_luajit.c /Fe:test_luajit.exe /link /LIBPATH:"%LIBRARY_LIB%" lua51.lib   # [win]
+    - test_luajit.exe                                       # [win]
+
 
 about:
   home: https://luajit.org
