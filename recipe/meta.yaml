@@ -1,39 +1,82 @@
-{% set version = "2.0.5" %}
+{% set name = "luajit" %}
+{% set version = "2.1" %}
+# The pkg on github have no traditional releases tarballs, inspite of that they have 
+# release branches that updates occasionally. So we are taking the latest commit
+# of the latest release branch.
+{% set commit = "18b087cd2cd4ddc4a79782bf155383a689d5093d" %}
 package:
-   name: luajit
-   version: {{ version }}
+  name: {{ name|lower }}
+  version: {{ version }}
 
 source:
-   url: http://luajit.org/download/LuaJIT-{{ version }}.tar.gz
-   sha256: 874b1f8297c697821f561f9b73b57ffd419ed8f4278c82e05b48806d30c1e979
+  url: https://github.com/LuaJIT/LuaJIT/archive/{{ commit }}.zip
+  sha256: 4093058691103cca9c9451a3a7befcf01506fcb9920062f8da1d54256f542d04
 
 build:
-   number: 1000
-   detect_binary_files_with_prefix: true
-   skip: True  # [win]
+  number: 0
+  run_exports:
+    - {{ pin_subpackage(name) }}
 
 requirements:
-   build:
-      - {{ compiler('c') }}
+  build:
+    - {{ stdlib('c') }}
+    - {{ compiler('c') }}
+    - make                    # [unix]
+  run_constrained:
+    # LuaJIT should not be installed together with lua 5.1
+    - lua <5.1|>=5.2
 
 test:
-   commands:
-      - luajit -v
-      - luajit -e "print(package.path)"
+  files:
+    - test_luajit.c
+  requires:
+    - {{ compiler('c') }}
+    - pkg-config            # [unix]
+  commands:
+    # Smoke tests Unix
+    - test -x "${PREFIX}/bin/luajit"                      # [unix]
+    - test -f "${PREFIX}/include/luajit-2.1/lua.h"        # [unix]
+    - test -f "${PREFIX}/include/luajit-2.1/luajit.h"     # [unix]
+    - test -f "${PREFIX}/lib/pkgconfig/luajit.pc"         # [unix]
+    - test -f "${PREFIX}/lib/libluajit${SHLIB_EXT}"       # [unix]
+    - luajit -v                                           # [unix]
+    - luajit -e "print(package.path)"                     # [unix]
+
+    # Smoke tests Windows
+    - if not exist %LIBRARY_BIN%\\luajit.exe exit 1         # [win]
+    - if not exist %LIBRARY_INC%\\luajit-2.1\\lua.h exit 1  # [win]
+    - luajit.exe -v                                         # [win]
+    - luajit.exe -e "print(package.path)"                   # [win]
+
+    # End-to-End test Unix
+    - export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"      # [unix]
+    - ${CC} test_luajit.c -o test_luajit $(pkg-config --cflags --libs luajit) -Wl,-rpath,${PREFIX}/lib    # [unix]
+    - ./test_luajit                                         # [unix]
+
+    # End-to-End test Windows
+    - cl.exe /I"%LIBRARY_INC%\luajit-2.1" test_luajit.c /Fe:test_luajit.exe /link /LIBPATH:"%LIBRARY_LIB%" lua51.lib   # [win]
+    - test_luajit.exe                                       # [win]
+
 
 about:
-   home: http://luajit.org/
-   license: MIT
-   license_family: MIT
-   license_file: COPYRIGHT
-   summary: Just-In-Time Compiler (JIT) for the Lua programming language.
+  home: https://luajit.org
+  license: MIT
+  license_family: MIT
+  license_file: COPYRIGHT
+  summary: Just-In-Time Compiler (JIT) for the Lua programming language
+  description: |
+    LuaJIT is a Just-In-Time compiler and runtime for the Lua programming
+    language. It is compatible with the Lua 5.1 API and ABI and includes
+    extensions such as the FFI library and JIT optimization facilities.
+  dev_url: https://github.com/LuaJIT/LuaJIT
+  doc_url: https://luajit.org/luajit.html
 
 extra:
-   recipe-maintainers:
-      - brisk022
-      - johanneskoester
-      - bgruening
-      - daler
-      - jdblischak
-      - cbrueffer
-      - marcelotrevisani
+  recipe-maintainers:
+    - brisk022
+    - johanneskoester
+    - bgruening
+    - daler
+    - jdblischak
+    - cbrueffer
+    - marcelotrevisani
